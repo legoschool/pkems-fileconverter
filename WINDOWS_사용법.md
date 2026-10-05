@@ -34,7 +34,7 @@ PC에 있는 폴더만 바꾼다면 이 절은 건너뜁니다. 구글 드라이
 **샘플로 테스트**를 누르면 내 파일 선택 없이 태극기·애국가 PDF를 변환합니다. 결과 목록에서 가사 내용을 확인하세요. 샘플은 `%LOCALAPPDATA%\PKOS\샘플`에 저장합니다. 원본 PDF는 그 안의 `원본` 폴더에 있습니다. 공개 가사를 비교하기 위해 샘플에만 개인정보 가리기를 적용하지 않습니다.
 
 ## 지원 범위
-- 한글 HWP/HWPX, Word DOCX, PowerPoint PPTX, Excel XLSX, 텍스트형 PDF, TXT, CSV, HTML, Markdown 파일을 폴더 단위로 변환합니다.
+- 한글 HWP/HWPX, Word DOCX, PowerPoint PPTX, Excel XLSX, 오픈오피스 ODT, 텍스트형 PDF, TXT, CSV, HTML, Markdown 파일을 폴더 단위로 변환합니다. 워드·파워포인트 파일 속 그림이 깨져 있어도 글자는 꺼냅니다.
 - PDF는 글자만 추출합니다. 그림 추출·스캔 OCR은 지원하지 않습니다.
 - 구글 드라이브의 G: 경로는 구글 드라이브 데스크톱에서 실제로 열 수 있어야 합니다. 바꿀 폴더는 「오프라인으로 사용」으로 두세요(위 「준비 조건」).
 - 구글 문서·시트·슬라이드는 DOCX·XLSX·PPTX로 내려받거나 기존 코랩 3부를 사용하세요. 구글 공유 링크·폴더 ID·`/content/drive/...` 경로를 PC 앱에 넣지 마세요.

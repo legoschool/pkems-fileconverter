@@ -194,6 +194,23 @@ class _HwpTable:
         return "\n".join(out)
 
 
+
+def read_hwpml(path: str) -> ReadResult:
+    """한글의 XML 저장 형식(HWPML). 문단(P) 안의 글자(CHAR)를 문단마다 한 줄로 꺼낸다."""
+    from xml.etree import ElementTree as ET
+    try:
+        root = ET.parse(path).getroot()
+    except Exception as e:
+        return ReadResult(False, kind="한글", error=f"한글 XML(HWPML)을 읽지 못했습니다: {e}")
+    body = root.find("BODY")
+    out = []
+    for p in (body if body is not None else root).iter("P"):
+        s = "".join(c.text or "" for c in p.iter("CHAR")).strip()
+        if s:
+            out.append(s)
+    return ReadResult(True, _clean(out), "한글", {"형식": "HWPML", "문단": len(out)})
+
+
 def read_hwp(path: str) -> ReadResult:
     try:
         import olefile
@@ -208,6 +225,8 @@ def read_hwp(path: str) -> ReadResult:
 
     if head.startswith(_ZIP_MAGIC):
         return read_hwpx(path)          # 사실은 hwpx 였다 — 그대로 처리해 준다
+    if head.lstrip().startswith(b"<?xml") or head.lstrip().startswith(b"<HWPML"):
+        return read_hwpml(path)         # 한글에서 XML(HWPML)로 저장한 문서
     if not head.startswith(_OLE_MAGIC):
         return ReadResult(
             False, kind="한글",
@@ -353,6 +372,12 @@ def read_hwpx(path: str) -> ReadResult:
     try:
         z = zipfile.ZipFile(path)
     except Exception as e:
+        try:  # 이름만 .hwpx이고 속은 옛 한글(OLE)인 파일
+            with open(path, "rb") as fh:
+                if fh.read(8).startswith(_OLE_MAGIC):
+                    return read_hwp(path)
+        except OSError:
+            pass
         return ReadResult(False, kind="한글", error=f"파일 열기 실패: {e}")
     try:
         secs = sorted(n for n in z.namelist()
@@ -402,6 +427,26 @@ def read_hwpx(path: str) -> ReadResult:
 # ─────────────────────────────────────────────────────────────
 # 워드 (.docx)
 # ─────────────────────────────────────────────────────────────
+
+def _ooxml_text(path: str, pattern: str, para_tag: str, text_tag: str) -> list[str]:
+    """docx/pptx 속 XML에서 글자만 꺼낸다(그림 등 다른 부분이 깨져도 읽힌다). 문단마다 한 줄."""
+    import zipfile
+    from xml.etree import ElementTree as ET
+    out = []
+    with zipfile.ZipFile(path) as z:
+        names = sorted((n for n in z.namelist() if re.fullmatch(pattern, n)),
+                       key=lambda n: [int(x) if x.isdigit() else x for x in re.split(r"(\d+)", n)])
+        for i, name in enumerate(names, 1):
+            if para_tag.endswith("}p") and "slide" in pattern:
+                out.append(f"## 슬라이드 {i}")
+            root = ET.fromstring(z.read(name))
+            for p in root.iter(para_tag):
+                s = "".join(t.text or "" for t in p.iter(text_tag)).strip()
+                if s:
+                    out.append(s)
+    return out
+
+
 def read_docx(path: str) -> ReadResult:
     bad = _check_ooxml(path, "워드", ".docx")
     if bad:
@@ -417,7 +462,7 @@ def read_docx(path: str) -> ReadResult:
             s = p.text.strip()
             if not s:
                 continue
-            style = (p.style.name or "").lower()
+            style = ((p.style.name if p.style is not None else "") or "").lower()
             m = re.search(r"heading (\d)", style)
             out.append(("#" * min(int(m.group(1)), 6) + " " + s) if m else s)
         for t in d.tables:
@@ -425,6 +470,13 @@ def read_docx(path: str) -> ReadResult:
         return ReadResult(True, _clean(out), "워드",
                           {"문단": len(d.paragraphs), "표": len(d.tables)})
     except Exception as e:
+        try:  # python-docx가 열지 못하는 문서도 본문 XML의 글자는 읽는다
+            W = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+            out = _ooxml_text(path, r"word/document\.xml", W + "p", W + "t")
+            if out:
+                return ReadResult(True, _clean(out), "워드", {"읽기": "본문 XML에서 글자만"})
+        except Exception:
+            pass
         return ReadResult(False, kind="워드", error=str(e))
 
 
@@ -463,6 +515,13 @@ def read_pptx(path: str) -> ReadResult:
         return ReadResult(True, _clean(out), "파워포인트",
                           {"슬라이드": len(prs.slides)})
     except Exception as e:
+        try:  # 속 그림이 깨져(CRC 오류 등) python-pptx가 열지 못해도 슬라이드 글자는 읽는다
+            A = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
+            out = _ooxml_text(path, r"ppt/slides/slide\d+\.xml", A + "p", A + "t")
+            if out:
+                return ReadResult(True, _clean(out), "파워포인트", {"읽기": "슬라이드 XML에서 글자만"})
+        except Exception:
+            pass
         return ReadResult(False, kind="파워포인트", error=str(e))
 
 
@@ -689,6 +748,35 @@ def read_gshortcut(path: str) -> ReadResult:
 # ─────────────────────────────────────────────────────────────
 # 등록표
 # ─────────────────────────────────────────────────────────────
+
+# ─────────────────────────────────────────────────────────────
+# 오픈오피스 문서 (.odt)
+# ─────────────────────────────────────────────────────────────
+def read_odt(path: str) -> ReadResult:
+    """.odt는 zip 안의 content.xml에 글이 있다. 제목(text:h)은 #으로, 문단(text:p)은 한 줄로."""
+    import zipfile
+    from xml.etree import ElementTree as ET
+    T = "{urn:oasis:names:tc:opendocument:xmlns:text:1.0}"
+    try:
+        with zipfile.ZipFile(path) as z:
+            root = ET.fromstring(z.read("content.xml"))
+    except Exception as e:
+        return ReadResult(False, kind="오픈오피스", error=f"파일 열기 실패: {e}")
+    out = []
+    for el in root.iter():
+        if el.tag == T + "h":
+            s = "".join(el.itertext()).strip()
+            if s:
+                level = int(el.get(T + "outline-level") or 1)
+                out.append("#" * min(max(level, 1), 6) + " " + s)
+        elif el.tag == T + "p":
+            s = "".join(el.itertext()).strip()
+            if s:
+                out.append(s)
+    return ReadResult(True, _clean(out), "오픈오피스", {"문단": len(out)})
+
+
+
 READERS = {
     ".hwp": read_hwp,
     ".hwpx": read_hwpx,
@@ -701,6 +789,7 @@ READERS = {
     ".pdf": read_pdf,
     ".html": read_html,
     ".htm": read_html,
+    ".odt": read_odt,
     ".txt": read_text,
     ".md": read_text,
     ".gdoc": read_gshortcut,
