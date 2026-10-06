@@ -362,9 +362,11 @@ class PrivacyFilter:
         for m in RE_RRN.finditer(text):
             digits = m.group(1) + m.group(2)
             mm, dd = int(digits[2:4]), int(digits[4:6])
-            if not (1 <= mm <= 12 and 1 <= dd <= 31):
-                continue                     # 날짜조차 아니면 번호가 아니다
-            conf = "확실" if _valid_rrn(digits) else "보통"
+            before = text[max(0, m.start() - 12):m.start()]
+            labeled = bool(re.search(r"주민\s*(?:등록\s*)?번호", before))
+            if not labeled and not (1 <= mm <= 12 and 1 <= dd <= 31):
+                continue                     # 이름표가 없을 때만 날짜로 오탐을 거른다
+            conf = "확실" if labeled or _valid_rrn(digits) else "보통"
             add("주민등록번호", m, m.group(0),
                 mask_rrn(m.group(0), self.p.주민등록번호), conf)
 

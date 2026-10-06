@@ -1,19 +1,19 @@
 # PKOS Windows 앱 사용법
 
 ## 다운로드와 실행
-1. [PC 앱 다운로드](https://github.com/legoschool/pkos-fileconverter/releases/download/v0.1.0/PKOS-Windows-v0.1.0.zip)를 누릅니다.
-2. 다운로드 폴더에서 `PKOS-Windows-v0.1.0.zip`을 오른쪽 클릭하고 **모두 압축 풀기**를 선택합니다.
+1. [PC 앱 다운로드](https://github.com/legoschool/pkos-fileconverter/releases/download/v0.1.1/PKOS-Windows-v0.1.1.zip)를 누릅니다.
+2. 다운로드 폴더에서 `PKOS-Windows-v0.1.1.zip`을 오른쪽 클릭하고 **모두 압축 풀기**를 선택합니다.
 3. 압축을 푼 폴더 안의 **PKOS.exe**를 더블클릭합니다. ZIP 안에서 바로 실행하지 마세요.
 4. 앱에서 **샘플로 테스트**를 눌러 먼저 확인합니다.
 5. 내 자료는 원본 폴더와 결과 폴더를 지정한 뒤 **변환 시작**을 누릅니다.
 
-[다운로드 전체 보기](https://github.com/legoschool/pkos-fileconverter/releases/tag/v0.1.0) · [코랩 실행](https://colab.research.google.com/github/legoschool/pkos-fileconverter/blob/main/PKOS_%EB%B3%80%ED%99%98%EA%B8%B0.ipynb)
+[다운로드 전체 보기](https://github.com/legoschool/pkos-fileconverter/releases/tag/v0.1.1) · [코랩 실행](https://colab.research.google.com/github/legoschool/pkos-fileconverter/blob/main/PKOS_%EB%B3%80%ED%99%98%EA%B8%B0.ipynb)
 
 배포된 `PKOS.exe`를 더블클릭합니다. 실행 파일에는 파이썬과 변환 엔진, 태극기·애국가 PDF 샘플이 포함되어 있어 별도 파이썬 설치가 필요 없습니다.
 
 소스 폴더에서는 `PKOS_실행.cmd`를 더블클릭해 설치된 파이썬으로 실행할 수도 있습니다. 먼저 아래의 의존성 설치 명령을 한 번 실행하세요.
 
-이 PC에서는 새로 만든 EXE가 Windows 애플리케이션 제어 정책(오류 4551)에 의해 차단되어 EXE 실행 검증을 완료하지 못했습니다. 파이썬 소스 앱의 GUI·변환 테스트는 통과했습니다.
+v0.1.1 실행 파일에서 앱 초기화, PDF 샘플·ODT 변환, 개인정보 가리기를 확인했습니다. 실행이 차단되는 환경에서는 보안 설정을 바꾸지 말고 코랩을 이용하거나 관리자에게 확인하세요.
 
 ## 준비 조건: 구글 드라이브 폴더를 바꿀 때
 
@@ -55,6 +55,7 @@ Windows EXE 제작:
 ```sh
 python -m pip install pyinstaller
 python build_windows.py
+python package_windows.py v0.1.1
 ```
 
 결과: `dist/PKOS.exe`. PDF 샘플은 기존 저장소 파일을 그대로 포함합니다. PDF 자체를 재생성할 때만 reportlab과 한글 TTF가 추가로 필요합니다.

@@ -294,8 +294,26 @@ def smoke_test(destination):
     assert result["done"] == 1 and result["failed"] == 0, result
     body = (dst / fc.records[0]["md"]).read_text(encoding="utf-8")
     assert "동해물과 백두산이" in body and "무궁화 삼천리 화려강산" in body
+    # 실제 배포물에 새 읽기 엔진과 개인정보 수정이 들어갔는지 함께 확인한다.
+    import zipfile
+    extra = Path(destination) / "odt-source"
+    extra.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(extra / "검증.odt", "w") as archive:
+        archive.writestr("content.xml", '<office:document-content xmlns:office="o" '
+                         'xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0">'
+                         '<office:body><office:text><text:h text:outline-level="1">변환 확인</text:h>'
+                         '<text:p>주민등록번호: 991350-1234567</text:p>'
+                         '</office:text></office:body></office:document-content>')
+    odt_out = Path(destination) / "odt-result"
+    odt = FolderConverter(FolderSettings(src_dir=str(extra), out_dir=str(odt_out),
+                          개인정보_가리기=True, 보고서_원본표시=False, verbose=False, skip_existing=False))
+    odt_result = odt.run()
+    assert odt_result["done"] == 1 and odt_result["failed"] == 0, odt_result
+    odt_body = (odt_out / odt.records[0]["md"]).read_text(encoding="utf-8")
+    assert "변환 확인" in odt_body and "991350-1234567" not in odt_body and "******-*******" in odt_body
     app.destroy()
-    Path(destination, "smoke-result.json").write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
+    Path(destination, "smoke-result.json").write_text(json.dumps(
+        {"sample": result, "odt": odt_result, "privacy": True, "gui_init": True}, ensure_ascii=False), encoding="utf-8")
 
 
 if __name__ == "__main__":

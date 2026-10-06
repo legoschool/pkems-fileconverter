@@ -14,13 +14,13 @@ AI가 읽기 좋은 **마크다운(.md)** 으로 한 번에 모아주는 도구�
 
 | 사용 방식 | 바로가기 | 시작 방법 |
 |---|---|---|
-| **Windows PC 앱** | **[PC 앱 다운로드 (ZIP)](https://github.com/legoschool/pkos-fileconverter/releases/download/v0.1.0/PKOS-Windows-v0.1.0.zip)** | 압축 풀기 → `PKOS.exe` 더블클릭 |
+| **Windows PC 앱** | **[PC 앱 다운로드 (ZIP)](https://github.com/legoschool/pkos-fileconverter/releases/download/v0.1.1/PKOS-Windows-v0.1.1.zip)** | 압축 풀기 → `PKOS.exe` 더블클릭 |
 | **설치 없이 코랩** | **[코랩 실행하기](https://colab.research.google.com/github/legoschool/pkos-fileconverter/blob/main/PKOS_%EB%B3%80%ED%99%98%EA%B8%B0.ipynb)** | 준비하기 두 칸 → 샘플 테스트 또는 내 폴더 변환 |
-| **파이썬 소스** | [소스 다운로드](https://github.com/legoschool/pkos-fileconverter/archive/refs/tags/v0.1.0.zip) | 압축 풀기 → 의존성 설치 → `PKOS_실행.cmd` |
+| **파이썬 소스** | [소스 다운로드](https://github.com/legoschool/pkos-fileconverter/archive/refs/tags/v0.1.1.zip) | 압축 풀기 → 의존성 설치 → `PKOS_실행.cmd` |
 
-[다운로드 전체 보기·변경 내역](https://github.com/legoschool/pkos-fileconverter/releases/tag/v0.1.0) · [PC 사용 설명서](WINDOWS_사용법.md) · [폴더 경로 복사 안내](경로_복사_안내.md)
+[다운로드 전체 보기·변경 내역](https://github.com/legoschool/pkos-fileconverter/releases/tag/v0.1.1) · [PC 사용 설명서](WINDOWS_사용법.md) · [폴더 경로 복사 안내](경로_복사_안내.md)
 
-**PC 버전 안내:** Windows 64비트용 초기 배포판입니다. 파이썬은 실행 파일에 포함되어 있습니다. 개발 PC에서는 Windows 애플리케이션 제어 정책(오류 4551)으로 EXE 실행이 차단되어, EXE 실행 검증은 완료하지 못했습니다. 파이썬 소스 앱의 변환·미리보기 테스트는 통과했습니다. 실행이 차단되는 환경에서는 보안 설정을 변경하지 말고 코랩을 이용하거나 관리자에게 확인하세요.
+**PC 버전 안내:** Windows 64비트용입니다. 파이썬은 실행 파일에 포함되어 있습니다. v0.1.1 실행 파일에서 앱 초기화, PDF 샘플·ODT 변환, 개인정보 가리기를 확인했습니다. 실행이 차단되는 환경에서는 보안 설정을 변경하지 말고 코랩을 이용하거나 관리자에게 확인하세요.
 
 ## 준비 조건
 
